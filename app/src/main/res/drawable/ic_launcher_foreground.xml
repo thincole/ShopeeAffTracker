@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Shopping Bag Handle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M 45,40 C 45,31 63,31 63,40" />
+
+    <!-- Shopping Bag Body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 33,42 L 75,42 C 77.5,42 79,44 78.5,46.5 L 75,76 C 74.5,79.5 72,81 68.5,81 L 39.5,81 C 36,81 33.5,79.5 33,76 L 29.5,46.5 C 29,44 30.5,42 33,42 Z" />
+
+    <!-- Inner Shopee Orange Circle / Coin -->
+    <path
+        android:fillColor="#EE4D2D"
+        android:pathData="M 54,61.5 m -13.5,0 a 13.5,13.5 0 1,1 27,0 a 13.5,13.5 0 1,1 -27,0" />
+
+    <!-- Dollar / Commission Symbol ($) inside Coin -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 54,53.5 C 51.5,53.5 49.5,55 49.5,57 C 49.5,61 58.5,59.5 58.5,63.5 C 58.5,65.5 56.5,67 54,67 C 51.5,67 49,65.5 49,63.5 M 54,51.5 L 54,69 M 51.5,53.5 L 56.5,53.5 M 51.5,67 L 56.5,67"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round" />
+
+    <!-- Growth Trend Arrow on Top Right -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFD59E"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 68,34 L 78,24 M 78,24 L 71,24 M 78,24 L 78,31" />
+
+</vector>
