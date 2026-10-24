@@ -132,10 +132,10 @@ jobs:
           chmod +x build_ipa/Payload/ShopeeCD.app/ShopeeCD
           cp app/build/outputs/apk/debug/app-debug.apk build_ipa/Payload/ShopeeCD.app/
           cd build_ipa
-          zip -r ShopeeCD01.02.ipa Payload
+          zip -r ../ShopeeCD01.02.ipa Payload
 
       - name: Upload iOS IPA
         uses: actions/upload-artifact@v4
         with:
           name: ShopeeCD01.02-IPA
-          path: build_ipa/ShopeeCD01.02.ipa
+          path: ShopeeCD01.02.ipa
