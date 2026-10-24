@@ -24,7 +24,7 @@ object UpdateManager {
     private const val UPDATE_JSON_URL =
         "https://raw.githubusercontent.com/thincole/ShopeeAffTracker/main/version.json"
 
-    private const val CURRENT_VERSION_CODE = 1 // Current App VersionCode
+    private const val CURRENT_VERSION_CODE = 2 // Current App VersionCode
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)

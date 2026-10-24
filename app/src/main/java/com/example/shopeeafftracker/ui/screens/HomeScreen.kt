@@ -406,7 +406,7 @@ private fun HeaderSection(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Tác giả: Thinaptm ▪ Version 1.0.1 ▪ Đa Thị Trường",
+                text = "Tác giả: Thinaptm ▪ Version 1.0.2 ▪ Đa Thị Trường",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = TextSecondaryGray
