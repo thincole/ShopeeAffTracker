@@ -63,6 +63,7 @@ jobs:
 
           clang -target arm64-apple-ios14.0 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) -o build_ipa/Payload/ShopeeCD.app/ShopeeCD main.c
           chmod +x build_ipa/Payload/ShopeeCD.app/ShopeeCD
+          printf "APPL????" > build_ipa/Payload/ShopeeCD.app/PkgInfo
 
           cat << 'EOF' > build_ipa/Payload/ShopeeCD.app/Info.plist
           <?xml version="1.0" encoding="UTF-8"?>
@@ -100,6 +101,16 @@ jobs:
               </array>
               <key>DTPlatformName</key>
               <string>iphoneos</string>
+              <key>DTPlatformVersion</key>
+              <string>17.0</string>
+              <key>DTPlatformBuild</key>
+              <string>21A326</string>
+              <key>DTSDKName</key>
+              <string>iphoneos17.0</string>
+              <key>DTSDKBuild</key>
+              <string>21A326</string>
+              <key>DTCompiler</key>
+              <string>com.apple.compilers.llvm.clang.1_0</string>
               <key>LSRequiresIPhoneOS</key>
               <true/>
           </dict>
