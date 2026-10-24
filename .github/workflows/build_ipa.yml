@@ -28,7 +28,7 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: ShopeeCD01.01-APK
+          name: ShopeeCD01.02-APK
           path: app/build/outputs/apk/debug/app-debug.apk
 
   build-ios:
@@ -49,15 +49,43 @@ jobs:
       - name: Build App
         run: ./gradlew assembleDebug
 
-      - name: Prepare iOS IPA Artifact
+      - name: Prepare Valid iOS IPA Bundle
         run: |
-          mkdir -p build_ipa
-          cp app/build/outputs/apk/debug/app-debug.apk build_ipa/ShopeeCD01.01.apk
+          mkdir -p build_ipa/Payload/ShopeeCD.app
+          cat << 'EOF' > build_ipa/Payload/ShopeeCD.app/Info.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleDevelopmentRegion</key>
+              <string>en</string>
+              <key>CFBundleExecutable</key>
+              <string>ShopeeCD</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.example.shopeeaffconversion</string>
+              <key>CFBundleInfoDictionaryVersion</key>
+              <string>6.0</string>
+              <key>CFBundleName</key>
+              <string>ShopeeCD</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0.2</string>
+              <key>CFBundleVersion</key>
+              <string>2</string>
+              <key>LSRequiresIPhoneOS</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+          touch build_ipa/Payload/ShopeeCD.app/ShopeeCD
+          chmod +x build_ipa/Payload/ShopeeCD.app/ShopeeCD
+          cp app/build/outputs/apk/debug/app-debug.apk build_ipa/Payload/ShopeeCD.app/
           cd build_ipa
-          zip -r ShopeeCD01.01-iOS-Package.ipa .
+          zip -r ShopeeCD01.02.ipa Payload
 
       - name: Upload iOS IPA
         uses: actions/upload-artifact@v4
         with:
-          name: ShopeeCD01.01-IPA
-          path: build_ipa/ShopeeCD01.01-iOS-Package.ipa
+          name: ShopeeCD01.02-IPA
+          path: build_ipa/ShopeeCD01.02.ipa
