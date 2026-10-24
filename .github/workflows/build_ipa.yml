@@ -44,9 +44,53 @@ jobs:
 
       - name: Build iOS App with Xcode
         run: |
-          xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphoneos -configuration Release -derivedDataPath build_derived CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+          xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphoneos -configuration Release -derivedDataPath build_derived CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
           mkdir -p build_ipa/Payload
           cp -r build_derived/Build/Products/Release-iphoneos/ShopeeCD.app build_ipa/Payload/
+
+          # Create self-signed certificate for PKCS7 mobileprovision container
+          openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout key.pem -out cert.pem -subj "/CN=ShopeeCD Developer/OU=Dev/O=ShopeeCD/C=US"
+
+          cat << 'EOF' > profile.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>AppIDName</key>
+              <string>ShopeeCD</string>
+              <key>ApplicationIdentifierPrefix</key>
+              <array>
+                  <string>A123456789</string>
+              </array>
+              <key>CreationDate</key>
+              <date>2026-01-01T00:00:00Z</date>
+              <key>ExpirationDate</key>
+              <date>2036-01-01T00:00:00Z</date>
+              <key>Entitlements</key>
+              <dict>
+                  <key>application-identifier</key>
+                  <string>A123456789.com.thincole.shopeeaffconversion</string>
+                  <key>get-task-allow</key>
+                  <true/>
+              </dict>
+              <key>Name</key>
+              <string>ShopeeCD Development</string>
+              <key>ProvisionsAllDevices</key>
+              <true/>
+              <key>TeamIdentifier</key>
+              <array>
+                  <string>A123456789</string>
+              </array>
+              <key>UUID</key>
+              <string>A1234567-89AB-CDEF-0123-456789ABCDEF</string>
+          </dict>
+          </plist>
+          EOF
+
+          openssl smime -sign -signer cert.pem -inkey key.pem -in profile.plist -out build_ipa/Payload/ShopeeCD.app/embedded.mobileprovision -outform DER
+          codesign --force --deep --sign - build_ipa/Payload/ShopeeCD.app
+
           cd build_ipa
           zip -r ../ShopeeCD01.02.ipa Payload
 
