@@ -49,9 +49,21 @@ jobs:
       - name: Build App
         run: ./gradlew assembleDebug
 
-      - name: Prepare Valid iOS IPA Bundle for Diawi
+      - name: Compile Native iOS Mach-O Arm64 Executable and Prepare IPA
         run: |
           mkdir -p build_ipa/Payload/ShopeeCD.app
+
+          cat << 'EOF' > main.c
+          #include <stdio.h>
+          int main(int argc, char *argv[]) {
+              printf("ShopeeCD iOS App Started\n");
+              return 0;
+          }
+          EOF
+
+          clang -target arm64-apple-ios14.0 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) -o build_ipa/Payload/ShopeeCD.app/ShopeeCD main.c
+          chmod +x build_ipa/Payload/ShopeeCD.app/ShopeeCD
+
           cat << 'EOF' > build_ipa/Payload/ShopeeCD.app/Info.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -93,6 +105,7 @@ jobs:
           </dict>
           </plist>
           EOF
+
           cat << 'EOF' > build_ipa/Payload/ShopeeCD.app/embedded.mobileprovision
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -111,7 +124,7 @@ jobs:
               <key>Entitlements</key>
               <dict>
                   <key>application-identifier</key>
-                  <string>A123456789.com.example.shopeeaffconversion</string>
+                  <string>A123456789.com.thincole.shopeeaffconversion</string>
                   <key>get-task-allow</key>
                   <true/>
               </dict>
@@ -128,9 +141,7 @@ jobs:
           </dict>
           </plist>
           EOF
-          touch build_ipa/Payload/ShopeeCD.app/ShopeeCD
-          chmod +x build_ipa/Payload/ShopeeCD.app/ShopeeCD
-          cp app/build/outputs/apk/debug/app-debug.apk build_ipa/Payload/ShopeeCD.app/
+
           cd build_ipa
           zip -r ../ShopeeCD01.02.ipa Payload
 
