@@ -62,7 +62,7 @@ jobs:
               <key>CFBundleExecutable</key>
               <string>ShopeeCD</string>
               <key>CFBundleIdentifier</key>
-              <string>com.example.shopeeaffconversion</string>
+              <string>com.thincole.shopeeaffconversion</string>
               <key>CFBundleInfoDictionaryVersion</key>
               <string>6.0</string>
               <key>CFBundleName</key>

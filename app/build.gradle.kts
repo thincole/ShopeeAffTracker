@@ -10,7 +10,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.shopeeaffconversion"
+        applicationId = "com.thincole.shopeeaffconversion"
         minSdk = 28
         targetSdk = 37
         versionCode = 2
