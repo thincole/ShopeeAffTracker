@@ -54,6 +54,9 @@ dependencies {
     // Network & JSON
     implementation(libs.okhttp)
     implementation(libs.gson)
+    implementation("io.ktor:ktor-client-core:2.3.12")
+    implementation("io.ktor:ktor-client-okhttp:2.3.12")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)

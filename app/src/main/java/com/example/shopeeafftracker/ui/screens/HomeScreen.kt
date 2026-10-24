@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
@@ -95,6 +96,25 @@ fun HomeScreen(viewModel: MainViewModel) {
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Lỗi đọc file: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val exportTxtFilePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val outputStream = context.contentResolver.openOutputStream(uri)
+                viewModel.exportAccountsToTxtStream(outputStream) { count ->
+                    if (count > 0) {
+                        Toast.makeText(context, "Đã xuất thành công $count tài khoản ra file TXT!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Chưa có tài khoản nào để xuất!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Lỗi xuất file: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -218,18 +238,18 @@ fun HomeScreen(viewModel: MainViewModel) {
                 )
             }
 
-            // Account Actions Row (+ Thêm Tài Khoản & Import TXT)
+            // Account Actions Row (+ Thêm, Nhập TXT, Xuất TXT)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
                         onClick = { viewModel.showAddAccountDialog(true) },
                         modifier = Modifier
-                            .weight(1.3f)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(16.dp),
+                            .weight(1.2f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = ShopeeOrange)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -237,14 +257,14 @@ fun HomeScreen(viewModel: MainViewModel) {
                                 imageVector = Icons.Default.Add,
                                 contentDescription = null,
                                 tint = Color.White,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = "Thêm Tài Khoản",
+                                text = "Thêm TK",
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
+                                fontSize = 13.sp
                             )
                         }
                     }
@@ -252,23 +272,49 @@ fun HomeScreen(viewModel: MainViewModel) {
                     OutlinedButton(
                         onClick = { viewModel.showImportTxtDialog(true) },
                         modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(16.dp)
+                            .weight(1.1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.FileDownload,
                                 contentDescription = null,
                                 tint = ShopeeOrange,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = "Nhập .TXT",
+                                text = "Nhập TXT",
                                 color = ShopeeOrange,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            exportTxtFilePickerLauncher.launch("ShopeeAccounts_Backup.txt")
+                        },
+                        modifier = Modifier
+                            .weight(1.1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.FileUpload,
+                                contentDescription = null,
+                                tint = ShopeeOrange,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = "Xuất TXT",
+                                color = ShopeeOrange,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
                             )
                         }
                     }
@@ -276,6 +322,13 @@ fun HomeScreen(viewModel: MainViewModel) {
             }
 
             // Accounts Breakdown List Header
+            val detailsMap = uiState.summaryReport?.accountDetails?.associateBy { it.accountId } ?: emptyMap()
+            val dieCount = uiState.filteredAccounts.count { account ->
+                val detail = detailsMap[account.id]
+                val statusText = detail?.status ?: account.status
+                statusText.contains("Die") || statusText.contains("Lỗi") || account.cookieOrToken.isBlank()
+            }
+
             item {
                 Row(
                     modifier = Modifier
@@ -284,12 +337,23 @@ fun HomeScreen(viewModel: MainViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "DANH SÁCH TÀI KHOẢN (${uiState.filteredAccounts.size})",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = TextSecondaryGray
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "DANH SÁCH TÀI KHOẢN (${uiState.filteredAccounts.size})",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = TextSecondaryGray
+                        )
+                        if (dieCount > 0) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "▪ ⚠️ Die: $dieCount",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = ShopeeRed
+                            )
+                        }
+                    }
 
                     IconButton(
                         onClick = { viewModel.refreshData() },
@@ -305,7 +369,6 @@ fun HomeScreen(viewModel: MainViewModel) {
             }
 
             // Account Items
-            val detailsMap = uiState.summaryReport?.accountDetails?.associateBy { it.accountId } ?: emptyMap()
             items(uiState.filteredAccounts, key = { it.id }) { account ->
                 AccountItemCard(
                     account = account,
@@ -615,10 +678,13 @@ private fun AccountItemCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.width(6.dp))
+                    val statusText = detail?.status ?: account.status
+                    val isDie = statusText.contains("Die") || statusText.contains("Lỗi")
                     Text(
-                        text = "(${detail?.status ?: account.status})",
+                        text = "($statusText)",
                         fontSize = 12.sp,
-                        color = TextSecondaryGray
+                        fontWeight = if (isDie) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isDie) ShopeeRed else TextSecondaryGray
                     )
                 }
 

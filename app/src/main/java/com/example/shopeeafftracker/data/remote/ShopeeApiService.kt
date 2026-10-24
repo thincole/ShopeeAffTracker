@@ -78,7 +78,7 @@ class ShopeeApiService {
             reconciledPayment = 0L,
             clickCount = 0,
             orderCount = 0,
-            status = if (account.cookieOrToken.isBlank()) "Chưa dán Cookie Shopee" else "Lỗi Cookie / Hết hạn"
+            status = if (account.cookieOrToken.isBlank()) "Chưa dán Cookie Shopee" else "Die Cookie"
         )
     }
 
@@ -117,7 +117,20 @@ class ShopeeApiService {
                 if (!response.isSuccessful || jsonStr.isBlank()) break
 
                 val root = JsonParser.parseString(jsonStr).asJsonObject
-                if (!root.has("code") || root.get("code").asInt != 0 || !root.has("data")) break
+                if (!root.has("code") || root.get("code").asInt != 0 || !root.has("data")) {
+                    // Cookie error / Code 30002
+                    return AccountCommissionDetail(
+                        accountId = account.id,
+                        accountName = account.name,
+                        reportDate = reportDateStr,
+                        totalCommission = 0L,
+                        currencySymbol = account.region.currencySymbol,
+                        reconciledPayment = 0L,
+                        clickCount = 0,
+                        orderCount = 0,
+                        status = "Die Cookie"
+                    )
+                }
 
                 val data = root.getAsJsonObject("data")
                 if (pageNum == 1 && data.has("total_count")) {
@@ -152,6 +165,13 @@ class ShopeeApiService {
             // Shopee currency unit scaling: raw units / 100000 = currency units
             val finalAmountVnd = if (filteredNetCommRaw > 0) filteredNetCommRaw / 100000L else 0L
 
+            // Warn "Die Cookie" if both clicks and conversions are 0
+            val statusText = if (totalCount == 0 && filteredOrders == 0) {
+                "Die Cookie"
+            } else {
+                "Thành công"
+            }
+
             AccountCommissionDetail(
                 accountId = account.id,
                 accountName = account.name,
@@ -161,7 +181,7 @@ class ShopeeApiService {
                 reconciledPayment = 0L,
                 clickCount = if (totalCount > 0) totalCount else filteredOrders,
                 orderCount = filteredOrders,
-                status = "Thành công"
+                status = statusText
             )
         } catch (e: Exception) {
             null

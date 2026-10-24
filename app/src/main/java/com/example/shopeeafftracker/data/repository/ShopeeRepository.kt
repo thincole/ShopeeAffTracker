@@ -28,6 +28,10 @@ class ShopeeRepository(
     private val _accountsFlow = MutableStateFlow<List<ShopeeAccount>>(emptyList())
     val accountsFlow: Flow<List<ShopeeAccount>> = _accountsFlow.asStateFlow()
 
+    suspend fun getAllAccounts(): List<ShopeeAccount> = withContext(Dispatchers.IO) {
+        dbHelper.getAllAccounts()
+    }
+
     suspend fun refreshAccountsList() = withContext(Dispatchers.IO) {
         val accounts = dbHelper.getAllAccounts()
         _accountsFlow.value = accounts
@@ -118,7 +122,7 @@ class ShopeeRepository(
                         reconciledPayment = 0L,
                         clickCount = 0,
                         orderCount = 0,
-                        status = if (account.cookieOrToken.isNotBlank()) "Lỗi Cookie / Hết hạn" else "Chưa dán Cookie"
+                        status = if (account.cookieOrToken.isNotBlank()) "Die Cookie" else "Chưa dán Cookie"
                     )
                 }
             }

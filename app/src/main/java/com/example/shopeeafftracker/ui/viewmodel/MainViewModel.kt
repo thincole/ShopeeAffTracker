@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStream
+import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -229,6 +230,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             withContext(Dispatchers.Main) {
                 onResult(insertedCount)
                 refreshData()
+            }
+        }
+    }
+
+    fun exportAccountsToTxtStream(outputStream: OutputStream?, onResult: (Int) -> Unit) {
+        if (outputStream == null) {
+            onResult(0)
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            var count = 0
+            try {
+                val accountList = repository.getAllAccounts()
+                val writer = outputStream.bufferedWriter()
+                for (account in accountList) {
+                    if (account.name.isNotBlank() && account.cookieOrToken.isNotBlank()) {
+                        val line = "${account.name}|${account.cookieOrToken}|${account.region.name}"
+                        writer.write(line)
+                        writer.newLine()
+                        count++
+                    }
+                }
+                writer.flush()
+                writer.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            withContext(Dispatchers.Main) {
+                onResult(count)
             }
         }
     }
