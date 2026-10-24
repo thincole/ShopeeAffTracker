@@ -32,127 +32,21 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
 
   build-ios:
-    name: Build iOS App & IPA
+    name: Build Native iOS App & IPA
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
+      - name: Select Xcode Version
+        uses: maxim-lobanov/setup-xcode@v1
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          xcode-version: latest-stable
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build App
-        run: ./gradlew assembleDebug
-
-      - name: Compile Native iOS Mach-O Arm64 Executable and Prepare IPA
+      - name: Build iOS App with Xcode
         run: |
-          mkdir -p build_ipa/Payload/ShopeeCD.app
-
-          cat << 'EOF' > main.c
-          #include <stdio.h>
-          int main(int argc, char *argv[]) {
-              printf("ShopeeCD iOS App Started\n");
-              return 0;
-          }
-          EOF
-
-          clang -target arm64-apple-ios14.0 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) -o build_ipa/Payload/ShopeeCD.app/ShopeeCD main.c
-          chmod +x build_ipa/Payload/ShopeeCD.app/ShopeeCD
-          printf "APPL????" > build_ipa/Payload/ShopeeCD.app/PkgInfo
-
-          cat << 'EOF' > build_ipa/Payload/ShopeeCD.app/Info.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleDevelopmentRegion</key>
-              <string>en</string>
-              <key>CFBundleExecutable</key>
-              <string>ShopeeCD</string>
-              <key>CFBundleIdentifier</key>
-              <string>com.thincole.shopeeaffconversion</string>
-              <key>CFBundleInfoDictionaryVersion</key>
-              <string>6.0</string>
-              <key>CFBundleName</key>
-              <string>ShopeeCD</string>
-              <key>CFBundleDisplayName</key>
-              <string>Shopee Chuyển Đổi</string>
-              <key>CFBundlePackageType</key>
-              <string>APPL</string>
-              <key>CFBundleShortVersionString</key>
-              <string>1.0.2</string>
-              <key>CFBundleVersion</key>
-              <string>2</string>
-              <key>CFBundleSupportedPlatforms</key>
-              <array>
-                  <string>iPhoneOS</string>
-              </array>
-              <key>MinimumOSVersion</key>
-              <string>14.0</string>
-              <key>UIDeviceFamily</key>
-              <array>
-                  <integer>1</integer>
-                  <integer>2</integer>
-              </array>
-              <key>DTPlatformName</key>
-              <string>iphoneos</string>
-              <key>DTPlatformVersion</key>
-              <string>17.0</string>
-              <key>DTPlatformBuild</key>
-              <string>21A326</string>
-              <key>DTSDKName</key>
-              <string>iphoneos17.0</string>
-              <key>DTSDKBuild</key>
-              <string>21A326</string>
-              <key>DTCompiler</key>
-              <string>com.apple.compilers.llvm.clang.1_0</string>
-              <key>LSRequiresIPhoneOS</key>
-              <true/>
-          </dict>
-          </plist>
-          EOF
-
-          cat << 'EOF' > build_ipa/Payload/ShopeeCD.app/embedded.mobileprovision
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>AppIDName</key>
-              <string>ShopeeCD</string>
-              <key>ApplicationIdentifierPrefix</key>
-              <array>
-                  <string>A123456789</string>
-              </array>
-              <key>CreationDate</key>
-              <date>2026-01-01T00:00:00Z</date>
-              <key>ExpirationDate</key>
-              <date>2036-01-01T00:00:00Z</date>
-              <key>Entitlements</key>
-              <dict>
-                  <key>application-identifier</key>
-                  <string>A123456789.com.thincole.shopeeaffconversion</string>
-                  <key>get-task-allow</key>
-                  <true/>
-              </dict>
-              <key>Name</key>
-              <string>ShopeeCD Development</string>
-              <key>ProvisionsAllDevices</key>
-              <true/>
-              <key>TeamIdentifier</key>
-              <array>
-                  <string>A123456789</string>
-              </array>
-              <key>UUID</key>
-              <string>A1234567-89AB-CDEF-0123-456789ABCDEF</string>
-          </dict>
-          </plist>
-          EOF
-
+          xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphoneos -configuration Release -derivedDataPath build_derived CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+          mkdir -p build_ipa/Payload
+          cp -r build_derived/Build/Products/Release-iphoneos/ShopeeCD.app build_ipa/Payload/
           cd build_ipa
           zip -r ../ShopeeCD01.02.ipa Payload
 
